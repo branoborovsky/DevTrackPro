@@ -1,0 +1,20 @@
+[package]
+name = "devtrack-pro"
+version = "1.0.0"
+description = "DevTrack Pro Tauri Backend"
+authors = ["DevTrack Team"]
+edition = "2021"
+rust-version = "1.77"
+
+[build-dependencies]
+tauri-build = { version = "2.0.3", features = [] }
+
+[dependencies]
+tauri = { version = "2.1.1", features = [] }
+tauri-plugin-shell = "2.0.1"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+rusqlite = { version = "0.31", features = ["bundled"] }
+
+[features]
+custom-protocol = ["tauri/custom-protocol"]

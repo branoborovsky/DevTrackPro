@@ -1,0 +1,60 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+@layer base {
+  html {
+    @apply h-full w-full overflow-hidden;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    @apply bg-slate-50 text-slate-900 transition-colors duration-300 font-sans;
+  }
+
+  /* Toto zabezpečí, že ak má HTML triedu .dark, celé body sa zmení */
+  html.dark body {
+    @apply bg-slate-950 text-slate-100;
+  }
+
+  #root {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+/* Custom Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  @apply bg-slate-300 rounded-full;
+}
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+  @apply bg-slate-800;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  @apply bg-slate-400;
+}
+
+.recharts-responsive-container {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 250px;
+}
