@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect  } from 'react';
 import { WorkLog, Ticket, Customer } from '../types';
 import { 
   Clock, Trash2, Edit3, Calendar,
@@ -34,13 +34,40 @@ const toYMD = (date: Date) => {
 };
 
 const WorkLogView: React.FC<WorkLogViewProps> = ({ logs, tickets, customers, searchQuery = '', onAddClick, onCopyClick, onUpdateLog, onDeleteLog, onExport }) => {
-  const [filterCustomer, setFilterCustomer] = useState('');
-  const [filterTicket, setFilterTicket] = useState('');
-  const [filterMode, setFilterMode] = useState<FilterMode>('month');
+  const [filterCustomer, setFilterCustomer] = useState(() => localStorage.getItem('dt_worklog_filterCustomer') || '');
+  const [filterTicket, setFilterTicket] = useState(() => localStorage.getItem('dt_worklog_filterTicket') || '');
+  const [filterMode, setFilterMode] = useState<FilterMode>(() => (localStorage.getItem('dt_worklog_filterMode') as FilterMode) || 'week');
   
-  const [dateFrom, setDateFrom] = useState(toYMD(new Date(new Date().getFullYear(), new Date().getMonth(), 1)));
-  const [dateTo, setDateTo] = useState(toYMD(new Date()));
-  const [sortConfig, setSortConfig] = useState<{ key: SortKey; order: SortOrder }>({ key: 'date', order: 'desc' });
+  const initialWeekStart = () => {
+    const d = new Date();
+    const day = d.getDay();
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+    return toYMD(new Date(new Date().setDate(diff)));
+  };
+
+  const initialWeekEnd = () => {
+    const d = new Date();
+    const day = d.getDay();
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+    return toYMD(new Date(new Date().setDate(diff + 6)));
+  };
+
+  const [dateFrom, setDateFrom] = useState(() => localStorage.getItem('dt_worklog_dateFrom') || initialWeekStart());
+  const [dateTo, setDateTo] = useState(() => localStorage.getItem('dt_worklog_dateTo') || initialWeekEnd());
+  const [sortConfig, setSortConfig] = useState<{ key: SortKey; order: SortOrder }>(() => {
+    const saved = localStorage.getItem('dt_worklog_sortConfig');
+    return saved ? JSON.parse(saved) : { key: 'date', order: 'desc' };
+  });
+
+  // Ukladanie filtrov do localStorage
+useEffect(() => {
+    localStorage.setItem('dt_worklog_filterMode', filterMode);
+    localStorage.setItem('dt_worklog_dateFrom', dateFrom);
+    localStorage.setItem('dt_worklog_dateTo', dateTo);
+    localStorage.setItem('dt_worklog_filterCustomer', filterCustomer);
+    localStorage.setItem('dt_worklog_filterTicket', filterTicket);
+    localStorage.setItem('dt_worklog_sortConfig', JSON.stringify(sortConfig));
+  }, [filterMode, dateFrom, dateTo, filterCustomer, filterTicket, sortConfig]);
 
   const getTicket = (id: string) => tickets.find(t => t.id === id);
   const getCustomerName = (log: WorkLog) => customers.find(c => c.id === log.customerId)?.name || 'Neznámy';

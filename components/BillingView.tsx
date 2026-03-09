@@ -32,19 +32,37 @@ const toYMD = (date: Date) => {
 
 const BillingView: React.FC<BillingViewProps> = ({ tickets, logs, customers, searchQuery = '', onBulkBill, onExport }) => {
   const today = toYMD(new Date());
-  const firstOfMonth = toYMD(new Date(new Date().getFullYear(), new Date().getMonth(), 1));
+  const firstOfYear = `${new Date().getFullYear()}-01-01`;
+  const lastOfYear = `${new Date().getFullYear()}-12-31`;
 
-  const [dateFrom, setDateFrom] = useState(firstOfMonth);
-  const [dateTo, setDateTo] = useState(today);
-  const [filterMode, setFilterMode] = useState<FilterMode>('month');
-  const [filterCustomer, setFilterCustomer] = useState('');
-  const [filterTicket, setFilterTicket] = useState('');
-  const [showOnlyUnbilled, setShowOnlyUnbilled] = useState(true);
+  const [dateFrom, setDateFrom] = useState(() => localStorage.getItem('dt_billing_dateFrom') || firstOfYear);
+  const [dateTo, setDateTo] = useState(() => localStorage.getItem('dt_billing_dateTo') || lastOfYear);
+  const [filterMode, setFilterMode] = useState<FilterMode>(() => (localStorage.getItem('dt_billing_filterMode') as FilterMode) || 'year');
+  const [filterCustomer, setFilterCustomer] = useState(() => localStorage.getItem('dt_billing_filterCustomer') || '');
+  const [filterTicket, setFilterTicket] = useState(() => localStorage.getItem('dt_billing_filterTicket') || '');
+  const [showOnlyUnbilled, setShowOnlyUnbilled] = useState(() => {
+    const saved = localStorage.getItem('dt_billing_showOnlyUnbilled');
+    return saved !== null ? saved === 'true' : true;
+  });
 
   const [invoiceNumber, setInvoiceNumber] = useState('');
   const [billingDate, setBillingDate] = useState(today);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [sortConfig, setSortConfig] = useState<{ key: SortKey; order: SortOrder }>({ key: 'date', order: 'desc' });
+  const [sortConfig, setSortConfig] = useState<{ key: SortKey; order: SortOrder }>(() => {
+    const saved = localStorage.getItem('dt_billing_sortConfig');
+    return saved ? JSON.parse(saved) : { key: 'date', order: 'desc' };
+  });
+
+  // Ukladanie filtrov do localStorage
+  useEffect(() => {
+    localStorage.setItem('dt_billing_dateFrom', dateFrom);
+    localStorage.setItem('dt_billing_dateTo', dateTo);
+    localStorage.setItem('dt_billing_filterMode', filterMode);
+    localStorage.setItem('dt_billing_filterCustomer', filterCustomer);
+    localStorage.setItem('dt_billing_filterTicket', filterTicket);
+    localStorage.setItem('dt_billing_showOnlyUnbilled', String(showOnlyUnbilled));
+    localStorage.setItem('dt_billing_sortConfig', JSON.stringify(sortConfig));
+  }, [dateFrom, dateTo, filterMode, filterCustomer, filterTicket, showOnlyUnbilled, sortConfig]);
 
   // Stav pre výber riadkov
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());

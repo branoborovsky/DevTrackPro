@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect  } from 'react';
 import { WorkLog, Ticket, Customer } from '../types';
 import { 
   Clock, ArrowUpDown, ArrowUp, ArrowDown, FileSpreadsheet, ChevronLeft, ChevronRight, Briefcase, PencilLine
@@ -29,12 +29,25 @@ const IHRView: React.FC<IHRViewProps> = ({ logs, tickets, customers, searchQuery
   const today = toYMD(new Date());
   const firstOfMonth = toYMD(new Date(new Date().getFullYear(), new Date().getMonth(), 1));
 
-  const [dateFrom, setDateFrom] = useState(firstOfMonth);
-  const [dateTo, setDateTo] = useState(today);
-  const [filterMode, setFilterMode] = useState<FilterMode>('month');
-  const [filterCustomer, setFilterCustomer] = useState('');
-  const [filterTicket, setFilterTicket] = useState('');
-  const [sortConfig, setSortConfig] = useState<{ key: SortKey; order: SortOrder }>({ key: 'date', order: 'desc' });
+  const [dateFrom, setDateFrom] = useState(() => localStorage.getItem('dt_ihr_dateFrom') || firstOfMonth);
+  const [dateTo, setDateTo] = useState(() => localStorage.getItem('dt_ihr_dateTo') || today);
+  const [filterMode, setFilterMode] = useState<FilterMode>(() => (localStorage.getItem('dt_ihr_filterMode') as FilterMode) || 'month');
+  const [filterCustomer, setFilterCustomer] = useState(() => localStorage.getItem('dt_ihr_filterCustomer') || '');
+  const [filterTicket, setFilterTicket] = useState(() => localStorage.getItem('dt_ihr_filterTicket') || '');
+  const [sortConfig, setSortConfig] = useState<{ key: SortKey; order: SortOrder }>(() => {
+    const saved = localStorage.getItem('dt_ihr_sortConfig');
+    return saved ? JSON.parse(saved) : { key: 'date', order: 'desc' };
+  });
+
+  // Ukladanie filtrov do localStorage
+  useEffect(() => {
+    localStorage.setItem('dt_ihr_dateFrom', dateFrom);
+    localStorage.setItem('dt_ihr_dateTo', dateTo);
+    localStorage.setItem('dt_ihr_filterMode', filterMode);
+    localStorage.setItem('dt_ihr_filterCustomer', filterCustomer);
+    localStorage.setItem('dt_ihr_filterTicket', filterTicket);
+    localStorage.setItem('dt_ihr_sortConfig', JSON.stringify(sortConfig));
+  }, [dateFrom, dateTo, filterMode, filterCustomer, filterTicket, sortConfig]);
 
   const getTicket = (id: string) => tickets.find(t => t.id === id);
   const getCustomer = (log: WorkLog) => customers.find(c => c.id === log.customerId);
