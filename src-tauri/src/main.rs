@@ -2,6 +2,7 @@
 // Prevencia otvárania konzoly na Windowse v produkcii
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+use log::{info, error, warn};
 use rusqlite::{params, Connection};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -22,27 +23,39 @@ struct AppConfig {
 
 impl AppConfig {
     fn load(app_handle: &tauri::AppHandle) -> Self {
-        let config_dir = app_handle.path().app_config_dir().unwrap_or_else(|_| PathBuf::from("."));
+        let config_dir = app_handle.path().app_config_dir().unwrap_or_else(|_| {
+            error!("Nepodarilo sa získať priečinok pre konfiguráciu");
+            PathBuf::from(".")
+        });
         let config_file = config_dir.join("config.json");
         
         if config_file.exists() {
-            if let Ok(content) = fs::read_to_string(config_file) {
+            if let Ok(content) = fs::read_to_string(&config_file) {
                 if let Ok(config) = serde_json::from_str(&content) {
+                    info!("Konfigurácia načítaná z {:?}", config_file);
                     return config;
                 }
             }
         }
+        info!("Používa sa predvolená konfigurácia");
         AppConfig { db_path: None }
     }
 
     fn save(&self, app_handle: &tauri::AppHandle) -> Result<(), String> {
         let config_dir = app_handle.path().app_config_dir().unwrap_or_else(|_| PathBuf::from("."));
         if !config_dir.exists() {
-            fs::create_dir_all(&config_dir).map_err(|e| e.to_string())?;
+            fs::create_dir_all(&config_dir).map_err(|e| {
+                error!("Chyba pri vytváraní config dir: {}", e);
+                e.to_string()
+            })?;
         }
         let config_file = config_dir.join("config.json");
         let content = serde_json::to_string_pretty(self).map_err(|e| e.to_string())?;
-        fs::write(config_file, content).map_err(|e| e.to_string())?;
+        fs::write(&config_file, content).map_err(|e| {
+            error!("Chyba pri zápise konfigurácie: {}", e);
+            e.to_string()
+        })?;
+        info!("Konfigurácia uložená do {:?}", config_file);
         Ok(())
     }
 }
@@ -53,9 +66,12 @@ fn get_db_path(app_handle: tauri::AppHandle) -> String {
     if let Some(path) = config.db_path {
         path
     } else {
-        let exe_path = std::env::current_exe().unwrap();
-        let db_dir = exe_path.parent().unwrap();
-        db_dir.join("devtrack_data.db").to_string_lossy().to_string()
+        // Predvolená cesta v užívateľskom adresári (App Data)
+        let data_dir = app_handle.path().app_data_dir().unwrap_or_else(|_| {
+            let exe_path = std::env::current_exe().unwrap();
+            exe_path.parent().unwrap().to_path_buf()
+        });
+        data_dir.join("devtrack_data.db").to_string_lossy().to_string()
     }
 }
 
@@ -216,6 +232,12 @@ fn db_clear_all(state: State<'_, DbState>) -> Result<(), String> {
 
 fn main() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_log::Builder::new()
+            .target(tauri_plugin_log::Target::new(tauri_plugin_log::TargetKind::Stdout))
+            .target(tauri_plugin_log::Target::new(tauri_plugin_log::TargetKind::LogDir { file_name: Some("app".into()) }))
+            .target(tauri_plugin_log::Target::new(tauri_plugin_log::TargetKind::Webview))
+            .level(log::LevelFilter::Info)
+            .build())
         .setup(|app| {
             let handle = app.handle();
             let db_path_str = get_db_path(handle.clone());
@@ -225,10 +247,17 @@ fn main() {
             let is_new = !db_path.exists();
             
             if let Some(parent) = db_path.parent() {
-                fs::create_dir_all(parent).map_err(|e| e.to_string())?;
+                if let Err(e) = fs::create_dir_all(parent) {
+                    error!("Chyba pri vytváraní priečinka pre DB: {}", e);
+                    return Err(e.to_string().into());
+                }
             }
             
-            let conn = Connection::open(db_path).map_err(|e| e.to_string())?;
+            info!("Otváram databázu na ceste: {:?}", db_path);
+            let conn = Connection::open(db_path).map_err(|e| {
+                error!("Nepodarilo sa otvoriť SQLite databázu: {}", e);
+                e.to_string()
+            })?;
             
             conn.execute("CREATE TABLE IF NOT EXISTS clients (id TEXT PRIMARY KEY, name TEXT, code TEXT, address TEXT)", []).map_err(|e| e.to_string())?;
             conn.execute("CREATE TABLE IF NOT EXISTS customers (id TEXT PRIMARY KEY, clientId TEXT, name TEXT, address TEXT, isInactive INTEGER DEFAULT 0)", []).map_err(|e| e.to_string())?;

@@ -17,6 +17,7 @@ import ClientModal from './components/ClientModal';
 import AlertModal from './components/AlertModal';
 import FilenameModal from './components/FilenameModal';
 import { useAppData } from './hooks/useAppData';
+import { logInfo } from './services/logService';
 import { View, Ticket, WorkLog, Customer, Client } from './types';
 import { INITIAL_TICKET_FORM } from './constants';
 import { invoke } from '@tauri-apps/api/core';
@@ -58,6 +59,10 @@ const App: React.FC = () => {
     message: '',
     type: 'warning'
   });
+
+  useEffect(() => {
+    logInfo("Aplikácia DevTrack Pro bola spustená.");
+  }, []);
 
   useEffect(() => {
     const root = window.document.documentElement;

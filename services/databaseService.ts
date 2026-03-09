@@ -1,5 +1,6 @@
 
 import { invoke } from '@tauri-apps/api/core';
+import { logError, logInfo } from './logService';
 
 /**
  * DatabaseService zabezpečuje natívny prístup k SQLite cez Tauri Rust backend.
@@ -11,7 +12,9 @@ export class DatabaseService {
 
   async init(): Promise<void> {
     if (!this.isTauri) {
-      console.warn("DevTrack: Režim simulácie (LocalStorage). Pre SQLite použi 'npm run tauri dev'.");
+      logInfo("DevTrack: Režim simulácie (LocalStorage). Pre SQLite použi 'npm run tauri dev'.");
+    } else {
+      logInfo("DevTrack: Inicializácia databázy v prostredí Tauri.");
     }
   }
 
@@ -24,7 +27,7 @@ export class DatabaseService {
         // Volanie Rust funkcie definovanej v src-tauri/src/main.rs
         return await invoke<T[]>('db_get_all', { table });
       } catch (err) {
-        console.error(`Chyba pri čítaní z tabuľky ${table}:`, err);
+        logError(err, `DatabaseService.getAll(${table})`);
         return [];
       }
     }
@@ -41,7 +44,7 @@ export class DatabaseService {
         await invoke('db_put', { table, item });
         return;
       } catch (err) {
-        console.error(`Chyba pri zápise do tabuľky ${table}:`, err);
+        logError(err, `DatabaseService.put(${table})`);
       }
     }
     const items = await this.getAll<any>(table);
@@ -60,7 +63,7 @@ export class DatabaseService {
         await invoke('db_bulk_put', { table, items });
         return;
       } catch (err) {
-        console.error(`Chyba pri hromadnom zápise do ${table}:`, err);
+        logError(err, `DatabaseService.bulkPut(${table})`);
       }
     }
     localStorage.setItem(`dt_${table}`, JSON.stringify(items));
@@ -75,7 +78,7 @@ export class DatabaseService {
         await invoke('db_delete', { table, id });
         return;
       } catch (err) {
-        console.error(`Chyba pri mazaní z ${table}:`, err);
+        logError(err, `DatabaseService.delete(${table})`);
       }
     }
     const items = await this.getAll<any>(table);
@@ -91,7 +94,7 @@ export class DatabaseService {
         await invoke('db_clear_all');
         return;
       } catch (err) {
-        console.error(`Chyba pri mazaní databázy:`, err);
+        logError(err, `DatabaseService.clearAll()`);
       }
     } else {
       ['clients', 'customers', 'tickets', 'worklogs'].forEach(t => localStorage.removeItem(`dt_${t}`));
