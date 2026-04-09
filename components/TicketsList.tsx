@@ -124,6 +124,22 @@ const TicketsList: React.FC<TicketsListProps> = ({
     });
   }, [filteredTickets, sortConfig, ticketStats]);
 
+  const getCustomerColor = (customerId: string) => {
+    const colors = [
+      'border-l-blue-500', 'border-l-emerald-500', 'border-l-amber-500', 
+      'border-l-purple-500', 'border-l-pink-500', 'border-l-orange-500',
+      'border-l-indigo-500', 'border-l-cyan-500', 'border-l-rose-500',
+      'border-l-teal-500', 'border-l-violet-500', 'border-l-fuchsia-500'
+    ];
+    let hash = 0;
+    for (let i = 0; i < customerId.length; i++) {
+      hash = customerId.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    // Použijeme hash na výber farby, pridáme trochu "soli" pre lepšiu distribúciu
+    const index = Math.abs(hash * 31) % colors.length;
+    return colors[index];
+  };
+
   const handleExcelExport = () => {
     const data = sortedTickets.map(t => {
       const stats = ticketStats[t.id];
@@ -200,31 +216,31 @@ const TicketsList: React.FC<TicketsListProps> = ({
         <table className="w-full text-left min-w-[1000px] bg-white dark:bg-transparent">
           <thead className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700">
             <tr>
-              <th onClick={() => requestSort('sapId')} className="px-6 py-4 text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider w-32 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+              <th onClick={() => requestSort('sapId')} className="px-6 py-2 text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider w-32 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
                 <div className="flex items-center">ID projektu {getSortIcon('sapId')}</div>
               </th>
-              <th onClick={() => requestSort('sapModule')} className="px-6 py-4 text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider w-24 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+              <th onClick={() => requestSort('sapModule')} className="px-6 py-2 text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider w-24 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
                 <div className="flex items-center">Modul {getSortIcon('sapModule')}</div>
               </th>
-              <th onClick={() => requestSort('title')} className="px-6 py-4 text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider w-80 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+              <th onClick={() => requestSort('title')} className="px-6 py-2 text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider w-80 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
                 <div className="flex items-center">Názov projektu {getSortIcon('title')}</div>
               </th>
-              <th onClick={() => requestSort('status')} className="px-6 py-4 text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider w-40 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+              <th onClick={() => requestSort('status')} className="px-6 py-2 text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider w-40 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
                 <div className="flex items-center">Status {getSortIcon('status')}</div>
               </th>
-              <th onClick={() => requestSort('priority')} className="px-6 py-4 text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider w-32 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+              <th onClick={() => requestSort('priority')} className="px-6 py-2 text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider w-32 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
                 <div className="flex items-center">Priorita {getSortIcon('priority')}</div>
               </th>
-              <th onClick={() => requestSort('estimation')} className="px-6 py-4 text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider text-right w-24 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+              <th onClick={() => requestSort('estimation')} className="px-6 py-2 text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider text-right w-24 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
                 <div className="flex items-center justify-end">Odhad {getSortIcon('estimation')}</div>
               </th>
-              <th onClick={() => requestSort('spent')} className="px-6 py-4 text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider text-right w-72 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+              <th onClick={() => requestSort('spent')} className="px-6 py-2 text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider text-right w-72 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
                 <div className="flex items-center justify-end">Čerpanie (h) {getSortIcon('spent')}</div>
               </th>
-              <th onClick={() => requestSort('date')} className="px-6 py-4 text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider w-32 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+              <th onClick={() => requestSort('date')} className="px-6 py-2 text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider w-32 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
                 <div className="flex items-center justify-end">Termín konca {getSortIcon('date')}</div>
               </th>
-              <th className="px-6 py-4 text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider text-right w-24">Akcie</th>
+              <th className="px-6 py-2 text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider text-right w-24">Akcie</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-transparent">
@@ -233,24 +249,24 @@ const TicketsList: React.FC<TicketsListProps> = ({
               const customer = customers.find(c => c.id === ticket.customerId);
               return (
                 <tr key={ticket.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group">
-                  <td className="px-6 py-4">
+                  <td className={`px-6 py-1.5 border-l-4 ${customer ? getCustomerColor(customer.id) : 'border-l-transparent'}`}>
                     <div className="flex flex-col">
                       <span className="font-bold text-blue-600 dark:text-blue-400 leading-tight text-sm">{ticket.sapId || 'N/A'}</span>
                       <span className="text-[10px] font-black text-slate-700 dark:text-slate-400 uppercase tracking-tight mt-0.5">{customer?.name}</span>
                     </div>
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-6 py-1.5">
                     <span className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">{ticket.sapModule || 'N/A'}</span>
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-6 py-1.5">
                     <div className="font-bold text-slate-900 dark:text-white leading-tight">{ticket.title}</div>
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-6 py-1.5">
                     <div className="relative inline-block group/status">
                       <select 
                         value={ticket.status}
                         onChange={(e) => onUpdateTicket({ ...ticket, status: e.target.value as Status })}
-                        className={`appearance-none px-3 py-1.5 pr-8 rounded-full text-[10px] font-black uppercase border cursor-pointer outline-none transition-all ${getStatusStyle(ticket.status)}`}
+                        className={`appearance-none px-3 py-1 pr-8 rounded-full text-[10px] font-black uppercase border cursor-pointer outline-none transition-all ${getStatusStyle(ticket.status)}`}
                       >
                         {Object.values(Status).map(s => (
                           <option key={s} value={s} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
@@ -261,40 +277,37 @@ const TicketsList: React.FC<TicketsListProps> = ({
                       <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none opacity-50 group-hover/status:opacity-100" />
                     </div>
                   </td>
-                  <td className="px-6 py-4"><span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase border ${getPriorityColor(ticket.priority)}`}>{ticket.priority}</span></td>
-                  <td className="px-6 py-4 text-right font-black text-xs text-slate-600 dark:text-slate-400">
+                  <td className="px-6 py-1.5"><span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase border ${getPriorityColor(ticket.priority)}`}>{ticket.priority}</span></td>
+                  <td className="px-6 py-1.5 text-right font-black text-xs text-slate-600 dark:text-slate-400">
                     {ticket.estimation || 0}
                   </td>
-                  <td className="px-6 py-4 text-right">
+                  <td className="px-6 py-1.5 text-right">
                     <div className="flex items-center justify-end">
-                      <div className={`p-3 rounded-2xl border flex items-center gap-4 shadow-sm transition-all group-hover:shadow-md ${
+                      <div className={`px-3 py-1.5 rounded-xl border flex items-center gap-4 shadow-sm transition-all group-hover:shadow-md ${
                         remaining < 0 
                           ? 'bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-900/30' 
                           : 'bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-800'
                       }`}>
                         <div className="flex flex-col items-end">
-                          <span className="text-[7px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">Budget</span>
                           <span className="text-base font-black text-slate-500 dark:text-slate-400 leading-none">{ticket.budget || 0}</span>
                         </div>
-                        <div className="w-px h-6 bg-slate-200 dark:bg-slate-700" />
+                        <div className="w-px h-4 bg-slate-200 dark:bg-slate-700" />
                         <div className="flex flex-col items-end">
-                          <span className="text-[7px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">Čerpané</span>
                           <span className="text-lg font-black text-blue-600 dark:text-blue-400 leading-none">{spent}</span>
                         </div>
-                        <div className="w-px h-6 bg-slate-200 dark:bg-slate-700" />
+                        <div className="w-px h-4 bg-slate-200 dark:bg-slate-700" />
                         <div className="flex flex-col items-end">
-                          <span className={`text-[7px] font-black uppercase tracking-widest mb-1 ${remaining < 0 ? 'text-red-500' : 'text-emerald-500'}`}>Zostatok</span>
                           <span className={`text-lg font-black leading-none ${remaining < 0 ? 'text-red-600' : 'text-emerald-600 dark:text-emerald-400'}`}>{remaining}</span>
                         </div>
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-right">
+                  <td className="px-6 py-1.5 text-right">
                     <div className="flex items-center justify-end gap-1 text-[11px] text-slate-500 dark:text-slate-400 font-bold uppercase">
                       <Calendar size={10} /> {ticket.date.split('-').reverse().join('.')}
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-right">
+                  <td className="px-6 py-1.5 text-right">
                     <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button onClick={() => onCopyTicket(ticket)} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg" title="Kopírovať"><Copy size={16} /></button>
                       <button onClick={() => onEditTicket(ticket)} className="p-2 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg" title="Upraviť"><Edit3 size={16} /></button>
