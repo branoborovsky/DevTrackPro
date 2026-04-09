@@ -21,13 +21,13 @@ interface TicketsListProps {
   onExport: (data: any[], filename: string) => void;
 }
 
-type SortKey = 'sapId' | 'sapModule' | 'title' | 'date' | 'status' | 'priority' | 'budget' | 'estimation' | 'spent' | 'remaining';
+type SortKey = 'customer' | 'sapId' | 'sapModule' | 'title' | 'date' | 'status' | 'priority' | 'budget' | 'estimation' | 'spent' | 'remaining';
 type SortOrder = 'asc' | 'desc';
 
 const TicketsList: React.FC<TicketsListProps> = ({ 
   tickets, logs, customers, searchQuery = '', onUpdateTicket, onEditTicket, onAddTicket, onDeleteTicket, onCopyTicket, onExport 
 }) => {
-  const [sortConfig, setSortConfig] = useState<{ key: SortKey; order: SortOrder }>({ key: 'date', order: 'desc' });
+  const [sortConfig, setSortConfig] = useState<{ key: SortKey; order: SortOrder }>({ key: 'customer', order: 'asc' });
   const [filterStatus, setFilterStatus] = useState<string>('');
   const [filterCustomer, setFilterCustomer] = useState<string>('');
   const [showAll, setShowAll] = useState(false);
@@ -105,6 +105,10 @@ const TicketsList: React.FC<TicketsListProps> = ({
       const statsB = ticketStats[b.id] || { spent: 0, remaining: 0 };
       
       switch (sortConfig.key) {
+        case 'customer': 
+          valA = customers.find(c => c.id === a.customerId)?.name || '';
+          valB = customers.find(c => c.id === b.customerId)?.name || '';
+          break;
         case 'sapId': valA = a.sapId; valB = b.sapId; break;
         case 'sapModule': valA = a.sapModule; valB = b.sapModule; break;
         case 'title': valA = a.title; valB = b.title; break;
@@ -129,14 +133,16 @@ const TicketsList: React.FC<TicketsListProps> = ({
       'border-l-blue-500', 'border-l-emerald-500', 'border-l-amber-500', 
       'border-l-purple-500', 'border-l-pink-500', 'border-l-orange-500',
       'border-l-indigo-500', 'border-l-cyan-500', 'border-l-rose-500',
-      'border-l-teal-500', 'border-l-violet-500', 'border-l-fuchsia-500'
+      'border-l-teal-500', 'border-l-violet-500', 'border-l-fuchsia-500',
+      'border-l-sky-500', 'border-l-lime-500', 'border-l-yellow-500',
+      'border-l-red-500', 'border-l-slate-400', 'border-l-zinc-500'
     ];
     let hash = 0;
     for (let i = 0; i < customerId.length; i++) {
       hash = customerId.charCodeAt(i) + ((hash << 5) - hash);
     }
     // Použijeme hash na výber farby, pridáme trochu "soli" pre lepšiu distribúciu
-    const index = Math.abs(hash * 31) % colors.length;
+    const index = Math.abs(hash * 53) % colors.length;
     return colors[index];
   };
 
@@ -216,8 +222,8 @@ const TicketsList: React.FC<TicketsListProps> = ({
         <table className="w-full text-left min-w-[1000px] bg-white dark:bg-transparent">
           <thead className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700">
             <tr>
-              <th onClick={() => requestSort('sapId')} className="px-6 py-2 text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider w-32 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-                <div className="flex items-center">ID projektu {getSortIcon('sapId')}</div>
+              <th onClick={() => requestSort('customer')} className="px-6 py-2 text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider w-44 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                <div className="flex items-center">Zákazník / ID {getSortIcon('customer')}</div>
               </th>
               <th onClick={() => requestSort('sapModule')} className="px-6 py-2 text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider w-24 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
                 <div className="flex items-center">Modul {getSortIcon('sapModule')}</div>
