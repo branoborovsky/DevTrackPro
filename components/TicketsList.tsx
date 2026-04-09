@@ -21,7 +21,7 @@ interface TicketsListProps {
   onExport: (data: any[], filename: string) => void;
 }
 
-type SortKey = 'sapId' | 'title' | 'date' | 'status' | 'priority' | 'budget' | 'spent' | 'remaining';
+type SortKey = 'sapId' | 'sapModule' | 'title' | 'date' | 'status' | 'priority' | 'budget' | 'estimation' | 'spent' | 'remaining';
 type SortOrder = 'asc' | 'desc';
 
 const TicketsList: React.FC<TicketsListProps> = ({ 
@@ -106,11 +106,13 @@ const TicketsList: React.FC<TicketsListProps> = ({
       
       switch (sortConfig.key) {
         case 'sapId': valA = a.sapId; valB = b.sapId; break;
+        case 'sapModule': valA = a.sapModule; valB = b.sapModule; break;
         case 'title': valA = a.title; valB = b.title; break;
         case 'date': valA = a.date; valB = b.date; break;
         case 'status': valA = a.status; valB = b.status; break;
         case 'priority': valA = a.priority; valB = b.priority; break;
         case 'budget': valA = a.budget; valB = b.budget; break;
+        case 'estimation': valA = a.estimation; valB = b.estimation; break;
         case 'spent': valA = statsA.spent; valB = statsB.spent; break;
         case 'remaining': valA = statsA.remaining; valB = statsB.remaining; break;
         default: return 0;
@@ -128,14 +130,16 @@ const TicketsList: React.FC<TicketsListProps> = ({
       const customer = customers.find(c => c.id === t.customerId);
       return {
         'ID Projektu': t.sapId,
+        'Modul': t.sapModule,
         'Zákazník': customer?.name || 'Neznámy',
         'Názov': t.title,
         'Status': t.status,
         'Priorita': t.priority,
+        'Odhad (h)': t.estimation,
         'Budget (h)': t.budget,
         'Odpracované (h)': stats.spent,
         'Zostatok (h)': stats.remaining,
-        'Deadline': t.date.split('-').reverse().join('.')
+        'Termín konca': t.date.split('-').reverse().join('.')
       };
     });
     onExport(data, `Zoznam_Projektov`);
@@ -196,20 +200,29 @@ const TicketsList: React.FC<TicketsListProps> = ({
         <table className="w-full text-left min-w-[1000px] bg-white dark:bg-transparent">
           <thead className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700">
             <tr>
-              <th onClick={() => requestSort('sapId')} className="px-6 py-4 text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider w-44 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+              <th onClick={() => requestSort('sapId')} className="px-6 py-4 text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider w-32 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
                 <div className="flex items-center">ID projektu {getSortIcon('sapId')}</div>
               </th>
-              <th onClick={() => requestSort('title')} className="px-6 py-4 text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider w-96 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+              <th onClick={() => requestSort('sapModule')} className="px-6 py-4 text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider w-24 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                <div className="flex items-center">Modul {getSortIcon('sapModule')}</div>
+              </th>
+              <th onClick={() => requestSort('title')} className="px-6 py-4 text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider w-80 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
                 <div className="flex items-center">Názov projektu {getSortIcon('title')}</div>
               </th>
-              <th onClick={() => requestSort('status')} className="px-6 py-4 text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider w-48 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+              <th onClick={() => requestSort('status')} className="px-6 py-4 text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider w-40 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
                 <div className="flex items-center">Status {getSortIcon('status')}</div>
               </th>
-              <th onClick={() => requestSort('priority')} className="px-6 py-4 text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+              <th onClick={() => requestSort('priority')} className="px-6 py-4 text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider w-32 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
                 <div className="flex items-center">Priorita {getSortIcon('priority')}</div>
               </th>
-              <th onClick={() => requestSort('spent')} className="px-6 py-4 text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider text-right w-44 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+              <th onClick={() => requestSort('estimation')} className="px-6 py-4 text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider text-right w-24 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                <div className="flex items-center justify-end">Odhad {getSortIcon('estimation')}</div>
+              </th>
+              <th onClick={() => requestSort('spent')} className="px-6 py-4 text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider text-right w-72 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
                 <div className="flex items-center justify-end">Čerpanie (h) {getSortIcon('spent')}</div>
+              </th>
+              <th onClick={() => requestSort('date')} className="px-6 py-4 text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider w-32 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                <div className="flex items-center justify-end">Termín konca {getSortIcon('date')}</div>
               </th>
               <th className="px-6 py-4 text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider text-right w-24">Akcie</th>
             </tr>
@@ -227,10 +240,10 @@ const TicketsList: React.FC<TicketsListProps> = ({
                     </div>
                   </td>
                   <td className="px-6 py-4">
+                    <span className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">{ticket.sapModule || 'N/A'}</span>
+                  </td>
+                  <td className="px-6 py-4">
                     <div className="font-bold text-slate-900 dark:text-white leading-tight">{ticket.title}</div>
-                    <div className="flex items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400 font-bold uppercase mt-1">
-                      <Calendar size={10} /> {ticket.date.split('-').reverse().join('.')}
-                    </div>
                   </td>
                   <td className="px-6 py-4">
                     <div className="relative inline-block group/status">
@@ -249,12 +262,37 @@ const TicketsList: React.FC<TicketsListProps> = ({
                     </div>
                   </td>
                   <td className="px-6 py-4"><span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase border ${getPriorityColor(ticket.priority)}`}>{ticket.priority}</span></td>
-                  <td className="px-6 py-4 text-right font-black text-xs">
-                    <span className="text-slate-400 dark:text-slate-500" title="Rozpočet">{ticket.budget}</span>
-                    <span className="mx-1 text-slate-200 dark:text-slate-800">/</span>
-                    <span className="text-blue-600 dark:text-blue-400" title="Čerpané">{spent}</span>
-                    <span className="mx-1 text-slate-200 dark:text-slate-800">/</span>
-                    <span className={`${remaining < 0 ? 'text-red-600' : 'text-emerald-600 dark:text-emerald-400'}`} title="Zostatok">{remaining}</span>
+                  <td className="px-6 py-4 text-right font-black text-xs text-slate-600 dark:text-slate-400">
+                    {ticket.estimation || 0}
+                  </td>
+                  <td className="px-6 py-4 text-right">
+                    <div className="flex items-center justify-end">
+                      <div className={`p-3 rounded-2xl border flex items-center gap-4 shadow-sm transition-all group-hover:shadow-md ${
+                        remaining < 0 
+                          ? 'bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-900/30' 
+                          : 'bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-800'
+                      }`}>
+                        <div className="flex flex-col items-end">
+                          <span className="text-[7px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">Budget</span>
+                          <span className="text-base font-black text-slate-500 dark:text-slate-400 leading-none">{ticket.budget || 0}</span>
+                        </div>
+                        <div className="w-px h-6 bg-slate-200 dark:bg-slate-700" />
+                        <div className="flex flex-col items-end">
+                          <span className="text-[7px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">Čerpané</span>
+                          <span className="text-lg font-black text-blue-600 dark:text-blue-400 leading-none">{spent}</span>
+                        </div>
+                        <div className="w-px h-6 bg-slate-200 dark:bg-slate-700" />
+                        <div className="flex flex-col items-end">
+                          <span className={`text-[7px] font-black uppercase tracking-widest mb-1 ${remaining < 0 ? 'text-red-500' : 'text-emerald-500'}`}>Zostatok</span>
+                          <span className={`text-lg font-black leading-none ${remaining < 0 ? 'text-red-600' : 'text-emerald-600 dark:text-emerald-400'}`}>{remaining}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 text-right">
+                    <div className="flex items-center justify-end gap-1 text-[11px] text-slate-500 dark:text-slate-400 font-bold uppercase">
+                      <Calendar size={10} /> {ticket.date.split('-').reverse().join('.')}
+                    </div>
                   </td>
                   <td className="px-6 py-4 text-right">
                     <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
