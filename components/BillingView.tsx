@@ -212,13 +212,25 @@ const BillingView: React.FC<BillingViewProps> = ({ tickets, logs, customers, sea
   };
 
   const handleExcelExport = () => {
-    const data = filteredLogs.map(l => ({
-      'Dátum': formatDateSlovak(l.date),
-      'Zákazník': getCustomer(l)?.name || 'Neznámy',
-      'Hodiny': l.hours,
-      'Faktúra': l.invoiceNumber || 'Nefakturované',
-      'Dátum fakturácie': l.billingDate ? formatDateSlovak(l.billingDate) : '-'
-    }));
+    const exportData = [...filteredLogs].sort((a, b) => {
+      const custA = getCustomer(a)?.name || '';
+      const custB = getCustomer(b)?.name || '';
+      if (custA !== custB) return custA.localeCompare(custB);
+      return a.date.localeCompare(b.date);
+    });
+
+    const data = exportData.map(l => {
+      const ticket = getTicket(l);
+      const projectInfo = ticket ? `${ticket.sapId} - ${ticket.title}` : (l.manualTicketId || 'N/A');
+      
+      return {
+        'Zákazník': getCustomer(l)?.name || 'Neznámy',
+        'Dátum': formatDateSlovak(l.date),
+        'Projekt + popis projektu': projectInfo,
+        'Popis': l.description,
+        'Hodiny': l.hours
+      };
+    });
     onExport(data, `Fakturacia_Export`);
   };
 
@@ -439,7 +451,7 @@ const BillingView: React.FC<BillingViewProps> = ({ tickets, logs, customers, sea
                       : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'
                   }`}
                 >
-                  <td className="px-6 py-1">
+                  <td className="px-6 py-4">
                     <div className={`p-1.5 rounded-lg border transition-all ${
                       isSelected 
                         ? 'text-blue-600 border-blue-200 bg-white dark:bg-slate-900' 
@@ -448,17 +460,17 @@ const BillingView: React.FC<BillingViewProps> = ({ tickets, logs, customers, sea
                       {isSelected ? <CheckSquare size={16} /> : <Square size={16} />}
                     </div>
                   </td>
-                  <td className="px-6 py-1 text-xs font-mono text-slate-500 dark:text-slate-400 text-center">{formatDateSlovak(log.date)}</td>
-                  <td className="px-6 py-1"><span className="text-xs font-bold text-slate-900 dark:text-white truncate block w-full">{c?.name}</span></td>
-                  <td className="px-6 py-1">
+                  <td className="px-6 py-4 text-xs font-mono text-slate-500 dark:text-slate-400 text-center">{formatDateSlovak(log.date)}</td>
+                  <td className="px-6 py-4"><span className="text-xs font-bold text-slate-900 dark:text-white truncate block w-full">{c?.name}</span></td>
+                  <td className="px-6 py-4">
                     <div className="flex flex-col">
                       <span className="text-xs font-bold text-blue-600 dark:text-blue-400">{t?.sapId || log.manualTicketId || 'N/A'}</span>
                       <span className="text-[10px] text-slate-400 truncate w-32">{t?.title || '-'}</span>
                     </div>
                   </td>
-                  <td className="px-6 py-1 text-sm text-slate-600 dark:text-slate-400 italic leading-relaxed">{log.description}</td>
-                  <td className="px-6 py-1 text-sm font-black text-slate-900 dark:text-white text-right">{log.hours.toFixed(1)}</td>
-                  <td className="px-6 py-1 text-right">
+                  <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400 italic leading-relaxed">{log.description}</td>
+                  <td className="px-6 py-4 text-sm font-black text-slate-900 dark:text-white text-right">{log.hours.toFixed(1)}</td>
+                  <td className="px-6 py-4 text-right">
                     {log.invoiceNumber ? (
                       <div className="flex flex-col">
                         <span className="text-emerald-600 dark:text-emerald-400 font-black text-xs uppercase">{log.invoiceNumber}</span>
